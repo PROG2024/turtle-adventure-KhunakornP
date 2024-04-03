@@ -4,6 +4,8 @@ adventure game.
 """
 from turtle import RawTurtle
 from gamelib import Game, GameElement
+import random
+import math
 
 
 class TurtleGameElement(GameElement):
@@ -271,6 +273,51 @@ class DemoEnemy(Enemy):
     def delete(self) -> None:
         pass
 
+
+class RandomWalkEnemy(Enemy):
+    """An enemy that walks randomly"""
+    def __init__(self,
+                 game: "TurtleAdventureGame",
+                 size: int,
+                 color: str):
+        super().__init__(game, size, color)
+        self.x = 100
+        self.y = 100
+        self.__id: int
+        self.__startpoint = (self.x, self.y)
+        self.__waypoint = self.set_waypoint()
+
+    def create(self) -> None:
+        """Creates an instance of the enemy"""
+        self.__id = self.canvas.create_oval(0, 0, self.size,
+                                            self.size, fill=self.color)
+
+    def set_waypoint(self):
+        """Sets the waypoint to a random location on the map"""
+        x = random.randint(0, 800), random.randint(0, 500)
+        return x
+
+    def update(self) -> None:
+        step_x = (self.__waypoint[0] -self.__startpoint[0]) /100
+        step_y = (self.__waypoint[1] - self.__startpoint[1]) / 100
+        if int(self.x) != self.__waypoint[0] and int(self.y )!= self.__waypoint[1]:
+            self.x += step_x
+            self.y += step_y
+        else:
+            self.__startpoint = self.__waypoint
+            self.__waypoint = self.set_waypoint()
+        if self.hits_player():
+            self.game.game_over_lose()
+
+    def render(self) -> None:
+        self.canvas.coords(self.__id,
+                           self.x - self.size / 2,
+                           self.y - self.size / 2,
+                           self.x + self.size/2,
+                           self.y + self.size/2)
+
+    def delete(self) -> None:
+        self.canvas.delete(self.__id)
 
 # TODO
 # Complete the EnemyGenerator class by inserting code to generate enemies
