@@ -296,6 +296,7 @@ class RandomWalkEnemy(Enemy):
         """Sets the waypoint to a random location on the map"""
         x = random.randint(0, 800), random.randint(0, 500)
         # self.canvas.create_oval(x[0]+3, x[1]+3, x[0]-3, x[1]-3, fill="red")
+        # reference point for debugging
         return x
 
     def update(self) -> None:
@@ -394,26 +395,25 @@ class FencingEnemy(Enemy):
                  color: str):
         super().__init__(game, size, color)
         self.__id: int
-        self.__points = [(150, 200), (150, 250), (200, 250), (200,200)]
+        self.__points = []
         self.__next = 1
         self.__startpoint: tuple
         self.__waypoint: tuple
 
     def create(self) -> None:
         """Creates an instance of the enemy"""
-        self.__square_id = self.canvas.create_rectangle(150, 200, 200, 250)
+        self.__points = [(self.x, self.y), (self.x,self.y+50),
+                         (self.x+50, self.y+50), (self.x+50, self.y)]
+        self.__square_id = self.canvas.create_rectangle(self.x,self.y,
+                                                        self.x+50, self.y+50)
         self.__id = self.canvas.create_oval(0, 0, self.size,
                                             self.size, fill=self.color)
         self.canvas.itemconfig(self.__square_id, dash=(4,1))
         self.__startpoint = (self.x, self.y)
         self.__waypoint = self.__points[self.__next]
 
-    def generate_next_point(self):
-        while True:
-            for i in self.__points:
-                yield i
-
     def update(self) -> None:
+        """updates the enemy to the new location"""
         step_x = (self.__waypoint[0] - self.__startpoint[0]) /25
         step_y = (self.__waypoint[1] - self.__startpoint[1]) / 25
         if int(self.x) != self.__waypoint[0] or int(self.y) != self.__waypoint[1]:
@@ -429,6 +429,7 @@ class FencingEnemy(Enemy):
             self.game.game_over_lose()
 
     def render(self) -> None:
+        """Render the enemy at the location"""
         self.canvas.coords(self.__id,
                            self.x - self.size / 2,
                            self.y - self.size / 2,
@@ -436,6 +437,7 @@ class FencingEnemy(Enemy):
                            self.y + self.size/2)
 
     def delete(self) -> None:
+        """Destroy this enemy instance"""
         self.canvas.delete(self.__id)
 
 # TODO
@@ -486,8 +488,8 @@ class EnemyGenerator:
         enemy.y = 200
         self.game.add_element(enemy)
         enemy = FencingEnemy(self.__game, 20, "green")
-        enemy.x = 150
-        enemy.y = 200
+        enemy.x = 500
+        enemy.y = 300
         self.game.add_element(enemy)
 
 
