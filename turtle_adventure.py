@@ -281,20 +281,21 @@ class RandomWalkEnemy(Enemy):
                  size: int,
                  color: str):
         super().__init__(game, size, color)
-        self.x = 100
-        self.y = 100
         self.__id: int
-        self.__startpoint = (self.x, self.y)
-        self.__waypoint = self.set_waypoint()
+        self.__startpoint: tuple
+        self.__waypoint: tuple
 
     def create(self) -> None:
         """Creates an instance of the enemy"""
         self.__id = self.canvas.create_oval(0, 0, self.size,
                                             self.size, fill=self.color)
+        self.__startpoint = (self.x, self.y)
+        self.__waypoint = self.set_waypoint()
 
     def set_waypoint(self):
         """Sets the waypoint to a random location on the map"""
         x = random.randint(0, 800), random.randint(0, 500)
+        # self.canvas.create_oval(x[0]+3, x[1]+3, x[0]-3, x[1]-3, fill="red")
         return x
 
     def update(self) -> None:
@@ -358,7 +359,7 @@ class EnemyGenerator:
         """
         Create a new enemy, possibly based on the game level
         """
-        new_enemy = DemoEnemy(self.__game, 20, "red")
+        new_enemy = RandomWalkEnemy(self.__game, 20, "red")
         new_enemy.x = 100
         new_enemy.y = 100
         self.game.add_element(new_enemy)
