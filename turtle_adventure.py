@@ -244,12 +244,6 @@ class Enemy(TurtleGameElement):
         )
 
 
-# TODO
-# * Define your enemy classes
-# * Implement all methods required by the GameElement abstract class
-# * Define enemy's update logic in the update() method
-# * Check whether the player hits this enemy, then call the
-#   self.game.game_over_lose() method in the TurtleAdventureGame class.
 class DemoEnemy(Enemy):
     """
     Demo enemy
@@ -285,10 +279,6 @@ class RandomWalkEnemy(Enemy):
         self.__startpoint: tuple
         self.__waypoint: tuple
 
-    @property
-    def id(self):
-        return self.__id
-
     def create(self) -> None:
         """Creates an instance of the enemy"""
         self.__id = self.canvas.create_oval(0, 0, self.size,
@@ -304,6 +294,10 @@ class RandomWalkEnemy(Enemy):
         return x
 
     def update(self) -> None:
+        """
+        Moves the enemy to the way point. If the way point is reached,
+        generates a new waypoint.
+        """
         step_x = (self.__waypoint[0] -self.__startpoint[0]) /100
         step_y = (self.__waypoint[1] - self.__startpoint[1]) / 100
         if int(self.x) != self.__waypoint[0] and int(self.y )!= self.__waypoint[1]:
@@ -316,6 +310,7 @@ class RandomWalkEnemy(Enemy):
             self.game.game_over_lose()
 
     def render(self) -> None:
+        """Renders the enemy"""
         self.canvas.coords(self.__id,
                            self.x - self.size / 2,
                            self.y - self.size / 2,
@@ -323,6 +318,7 @@ class RandomWalkEnemy(Enemy):
                            self.y + self.size/2)
 
     def delete(self) -> None:
+        """Deletes the enemy instance"""
         self.canvas.delete(self.__id)
 
 
@@ -345,6 +341,7 @@ class ChasingEnemy(Enemy):
         self.__id = self.canvas.create_oval(0, 0, self.size,
                                             self.size, fill=self.color)
 
+    # movement options for the enemy
     def move_right_x(self):
         self.move_to(min(self.x + self.speed, self.__player_x), self.y)
         if self.x > self.__player_x:
@@ -366,10 +363,15 @@ class ChasingEnemy(Enemy):
             self.__state_y = self.move_top_y
 
     def move_to(self,x,y):
+        """Move the enemy to the cartesian co-ordinates"""
         self.x = x
         self.y = y
 
     def update(self) -> None:
+        """
+        Moves the enemy closer to the player. periodically update the
+        players current location.
+        """
         self.__state_x()
         self.__state_y()
         if self.hits_player():
@@ -377,10 +379,12 @@ class ChasingEnemy(Enemy):
         self.update_point()
 
     def update_point(self):
+        """Updates the players co-ordinates to its current location"""
         self.__player_x = self.game.player.x
         self.__player_y = self.game.player.y
 
     def render(self) -> None:
+        """Renders the enemy"""
         self.canvas.coords(self.__id,
                            self.x - self.size / 2,
                            self.y - self.size / 2,
@@ -388,6 +392,7 @@ class ChasingEnemy(Enemy):
                            self.y + self.size/2)
 
     def delete(self) -> None:
+        """Deletes the enemy"""
         self.canvas.delete(self.__id)
 
 
@@ -417,7 +422,11 @@ class FencingEnemy(Enemy):
         self.__waypoint = self.__points[self.__next]
 
     def update(self) -> None:
-        """updates the enemy to the new location"""
+        """
+        Moves the enemy to the next waypoint. After a waypoint is reached,
+        start moving towards the next waypoint in the list. When all waypoints
+        have been reached, move back to the start and repeat the process.
+        """
         step_x = (self.__waypoint[0] - self.__startpoint[0]) /25
         step_y = (self.__waypoint[1] - self.__startpoint[1]) / 25
         if int(self.x) != self.__waypoint[0] or int(self.y) != self.__waypoint[1]:
@@ -456,6 +465,7 @@ class ShootingEnemy(Enemy):
         self.shot_fuse = fuze
         self.shot_timer = 0
     def create(self) -> None:
+        """Creates an instance of the enemy"""
         self.__barrel = self.canvas.create_rectangle(self.x , self.y,
                                                      self.x+self.size/2,
                                                      self.y+self.size,
@@ -464,6 +474,10 @@ class ShootingEnemy(Enemy):
                                             self.size, fill=self.color)
 
     def update(self) -> None:
+        """
+        When the timer reaches the fuze timer spawn a particle moving in the
+        orientation of the shooting enemy.
+        """
         if self.shot_fuse == self.shot_timer:
             particle = ParticleEnemy(self.game, int(self.size/1.5), "pink")
             particle.x = self.x
@@ -518,10 +532,12 @@ class ShootingEnemy(Enemy):
                                self.y + self.size / 2)
 
     def delete(self) -> None:
+        """Deletes the enemy instance"""
         self.canvas.delete(self.__id)
 
 
 class ParticleEnemy(ShootingEnemy):
+    """A particle fired from a ShootingEnemy"""
     def __init__(self,
                  game: "TurtleAdventureGame",
                  size: int,
@@ -529,10 +545,12 @@ class ParticleEnemy(ShootingEnemy):
         super().__init__(game, size, color)
 
     def create(self) -> None:
+        """Creates an instance of the enemy"""
         self.__id = self.canvas.create_oval(0, 0, self.size,
                                             self.size, fill=self.color)
 
     def update(self) -> None:
+        """Moves towards the edge of the screen according to the orientation"""
         if self.orient == 2:
             self.y += 3
         elif self.orient == 3:
@@ -549,6 +567,7 @@ class ParticleEnemy(ShootingEnemy):
             self.delete()
 
     def render(self) -> None:
+        """Renders the enemy"""
         self.canvas.coords(self.__id,
                            self.x - self.size / 2,
                            self.y - self.size / 2,
@@ -556,6 +575,7 @@ class ParticleEnemy(ShootingEnemy):
                            self.y + self.size / 2)
 
     def delete(self) -> None:
+        """Deletes the enemy instance"""
         self.canvas.delete(self.__id)
 
 
@@ -598,7 +618,7 @@ class EnemyGenerator:
         """
         Create a new enemy, possibly based on the game level
         """
-        new_enemy = ChasingEnemy(self.__game, 20, "red")
+        new_enemy = ChasingEnemy(self.__game, 50, "red")
         new_enemy.x = 100
         new_enemy.y = 100
         self.game.add_element(new_enemy)
@@ -610,8 +630,8 @@ class EnemyGenerator:
         enemy.x = 500
         enemy.y = 300
         self.game.add_element(enemy)
-        enemy = ShootingEnemy(self.__game, 20, "green")
-        enemy.x = 500
+        enemy = ShootingEnemy(self.__game, 20, "yellow")
+        enemy.x = 600
         enemy.y = 300
         enemy.orient = 1
         self.game.add_element(enemy)
@@ -633,7 +653,6 @@ class TurtleAdventureGame(Game): # pylint: disable=too-many-ancestors
         self.enemies: list[Enemy] = []
         self.enemy_generator: EnemyGenerator
         super().__init__(parent)
-        self.god = True
 
     def init_game(self):
         self.canvas.config(width=self.screen_width, height=self.screen_height)
@@ -677,11 +696,10 @@ class TurtleAdventureGame(Game): # pylint: disable=too-many-ancestors
         """
         Called when the player loses the game and stop the game
         """
-        if not self.god:
-            self.stop()
-            font = ("Arial", 36, "bold")
-            self.canvas.create_text(self.screen_width/2,
-                                    self.screen_height/2,
-                                    text="You Lose",
-                                    font=font,
-                                    fill="red")
+        self.stop()
+        font = ("Arial", 36, "bold")
+        self.canvas.create_text(self.screen_width/2,
+                                self.screen_height/2,
+                                text="You Lose",
+                                font=font,
+                                fill="red")
