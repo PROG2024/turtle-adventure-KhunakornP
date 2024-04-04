@@ -618,24 +618,30 @@ class EnemyGenerator:
         """
         Create a new enemy, possibly based on the game level
         """
-        new_enemy = ChasingEnemy(self.__game, 50, "red")
-        new_enemy.x = 100
-        new_enemy.y = 100
-        self.game.add_element(new_enemy)
-        enemy = RandomWalkEnemy(self.__game, 20, "blue")
-        enemy.x = 200
-        enemy.y = 200
-        self.game.add_element(enemy)
-        enemy = FencingEnemy(self.__game, 20, "green")
-        enemy.x = 500
-        enemy.y = 300
-        self.game.add_element(enemy)
-        enemy = ShootingEnemy(self.__game, 20, "yellow")
-        enemy.x = 600
-        enemy.y = 300
-        enemy.orient = 1
-        self.game.add_element(enemy)
-
+        if self.level == 1:
+            new_enemy = ChasingEnemy(self.__game, 50, "red")
+            new_enemy.x = 100
+            new_enemy.y = 100
+            self.game.add_element(new_enemy)
+            for i in range(12):
+                enemy = RandomWalkEnemy(self.__game, 20, "blue")
+                enemy.x = random.randint(200, 700)
+                enemy.y = random.randint(50, 400)
+                self.game.add_element(enemy)
+            enemy = FencingEnemy(self.__game, 20, "green")
+            enemy.x = self.game.home.x - 25
+            enemy.y = self.game.home.y - 25
+            self.game.add_element(enemy)
+            enemy = ShootingEnemy(self.__game, 20, "yellow")
+            enemy.x = self.game.home.x
+            enemy.y = self.game.home.y + 50
+            enemy.orient = 1
+            self.game.add_element(enemy)
+            enemy = ShootingEnemy(self.__game, 20, "yellow")
+            enemy.x = self.game.home.x
+            enemy.y = self.game.home.y - 50
+            enemy.orient = 1
+            self.game.add_element(enemy)
 
 class TurtleAdventureGame(Game): # pylint: disable=too-many-ancestors
     """
