@@ -343,29 +343,31 @@ class ChasingEnemy(Enemy):
 
     # movement options for the enemy
     def move_right_x(self):
-        self.move_to(min(self.x + self.speed, self.__player_x), self.y)
+        self.move_to(self.speed, 0)
         if self.x > self.__player_x:
             self.__state_x = self.move_left_x
 
     def move_left_x(self):
-        self.move_to(min(self.x - self.speed, self.__player_x), self.y)
+        if self.x - self.speed > self.__player_x:
+            self.move_to(- self.speed, 0)
         if self.x < self.__player_x:
             self.__state_x = self.move_right_x
 
     def move_top_y(self):
-        self.move_to(self.x, min(self.y+self.speed, self.__player_y))
+        self.move_to(0, +self.speed)
         if self.y > self.__player_y:
             self.__state_y = self.move_bot_y
 
     def move_bot_y(self):
-        self.move_to(self.x, min(self.y - self.speed, self.__player_y))
+        if self.y - self.speed > self.__player_y:
+            self.move_to(0, -self.speed)
         if self.y < self.__player_y:
             self.__state_y = self.move_top_y
 
     def move_to(self,x,y):
         """Move the enemy to the cartesian co-ordinates"""
-        self.x = x
-        self.y = y
+        self.x += x
+        self.y += y
 
     def update(self) -> None:
         """
@@ -620,8 +622,8 @@ class EnemyGenerator:
         """
         if self.level == 1:
             new_enemy = ChasingEnemy(self.__game, 50, "red")
-            new_enemy.x = 100
-            new_enemy.y = 100
+            new_enemy.x = random.randint(400, 500)
+            new_enemy.y = random.randint(0,100)
             self.game.add_element(new_enemy)
             for i in range(12):
                 enemy = RandomWalkEnemy(self.__game, 20, "blue")
