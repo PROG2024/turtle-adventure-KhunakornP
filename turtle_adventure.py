@@ -298,8 +298,10 @@ class RandomWalkEnemy(Enemy):
         Moves the enemy to the way point. If the way point is reached,
         generates a new waypoint.
         """
-        step_x = (self.__waypoint[0] -self.__startpoint[0]) /100
-        step_y = (self.__waypoint[1] - self.__startpoint[1]) / 100
+        step_x = ((self.__waypoint[0] -self.__startpoint[0])
+                  /random.randint(75,150))
+        step_y = ((self.__waypoint[1] - self.__startpoint[1])
+                  / random.randint(75,150))
         if int(self.x) != self.__waypoint[0] and int(self.y )!= self.__waypoint[1]:
             self.x += step_x
             self.y += step_y
@@ -403,23 +405,25 @@ class FencingEnemy(Enemy):
     def __init__(self,
                  game: "TurtleAdventureGame",
                  size: int,
-                 color: str):
+                 color: str, path="no"):
         super().__init__(game, size, color)
         self.__id: int
         self.__points = []
         self.__next = 1
         self.__startpoint: tuple
         self.__waypoint: tuple
+        self.path = path
 
     def create(self) -> None:
         """Creates an instance of the enemy"""
         self.__points = [(self.x, self.y), (self.x,self.y+50),
                          (self.x+50, self.y+50), (self.x+50, self.y)]
-        self.__square_id = self.canvas.create_rectangle(self.x,self.y,
-                                                        self.x+50, self.y+50)
+        if self.path == "yes":
+            self.__square_id = self.canvas.create_rectangle(self.x,self.y,
+                                                            self.x+50, self.y+50)
+            self.canvas.itemconfig(self.__square_id, dash=(4, 1))
         self.__id = self.canvas.create_oval(0, 0, self.size,
                                             self.size, fill=self.color)
-        self.canvas.itemconfig(self.__square_id, dash=(4,1))
         self.__startpoint = (self.x, self.y)
         self.__waypoint = self.__points[self.__next]
 
@@ -621,16 +625,17 @@ class EnemyGenerator:
         Create a new enemy, possibly based on the game level
         """
         if self.level == 1:
-            new_enemy = ChasingEnemy(self.__game, 50, "red")
-            new_enemy.x = random.randint(400, 500)
-            new_enemy.y = random.randint(0,100)
-            self.game.add_element(new_enemy)
+            for i in range(2):
+                new_enemy = ChasingEnemy(self.__game, 50, "red")
+                new_enemy.x = random.randint(200, 700)
+                new_enemy.y = random.randint(50,400)
+                self.game.add_element(new_enemy)
             for i in range(12):
                 enemy = RandomWalkEnemy(self.__game, 20, "blue")
                 enemy.x = random.randint(200, 700)
                 enemy.y = random.randint(50, 400)
                 self.game.add_element(enemy)
-            enemy = FencingEnemy(self.__game, 20, "green")
+            enemy = FencingEnemy(self.__game, 20, "green", "yes")
             enemy.x = self.game.home.x - 25
             enemy.y = self.game.home.y - 25
             self.game.add_element(enemy)
