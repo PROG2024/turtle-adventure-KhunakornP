@@ -405,23 +405,32 @@ class FencingEnemy(Enemy):
     def __init__(self,
                  game: "TurtleAdventureGame",
                  size: int,
-                 color: str, path="no"):
+                 color: str, path="no", enemy=1):
         super().__init__(game, size, color)
         self.__id: int
         self.__points = []
-        self.__next = 1
+        self.__next = 0
         self.__startpoint: tuple
         self.__waypoint: tuple
         self.path = path
+        self.enemies = enemy
+        self.speed = 2
 
     def create(self) -> None:
         """Creates an instance of the enemy"""
-        self.__points = [(self.x, self.y), (self.x,self.y+50),
-                         (self.x+50, self.y+50), (self.x+50, self.y)]
+        if len(self.__points) <=0:
+            self.__points = [(self.x, self.y), (self.x,self.y+50),
+                             (self.x+50, self.y+50), (self.x+50, self.y)]
         if self.path == "yes":
             self.__square_id = self.canvas.create_rectangle(self.x,self.y,
                                                             self.x+50, self.y+50)
             self.canvas.itemconfig(self.__square_id, dash=(4, 1))
+        for enemy in range(self.enemies):
+            chain_enemy = FencingEnemy(self.game, int(self.size), self.color,enemy=0)
+            chain_enemy.x = self.x + int(self.size*enemy)
+            chain_enemy.y = self.y
+            chain_enemy.__points = self.__points
+            self.game.add_element(chain_enemy)
         self.__id = self.canvas.create_oval(0, 0, self.size,
                                             self.size, fill=self.color)
         self.__startpoint = (self.x, self.y)
@@ -433,11 +442,15 @@ class FencingEnemy(Enemy):
         start moving towards the next waypoint in the list. When all waypoints
         have been reached, move back to the start and repeat the process.
         """
-        step_x = (self.__waypoint[0] - self.__startpoint[0]) /25
-        step_y = (self.__waypoint[1] - self.__startpoint[1]) / 25
         if int(self.x) != self.__waypoint[0] or int(self.y) != self.__waypoint[1]:
-            self.x += step_x
-            self.y += step_y
+            if (self.x - self.__waypoint[0]) <0:
+                self.x += self.speed
+            elif self.x-self.__waypoint[0] > 0:
+                self.x -= self.speed
+            if (self.y - self.__waypoint[1]) <0:
+                self.y += self.speed
+            elif self.y-self.__waypoint[1] > 0:
+                self.y -= self.speed
         else:
             self.__startpoint = self.__waypoint
             self.__next += 1
@@ -635,7 +648,7 @@ class EnemyGenerator:
                 enemy.x = random.randint(200, 700)
                 enemy.y = random.randint(50, 400)
                 self.game.add_element(enemy)
-            enemy = FencingEnemy(self.__game, 20, "green", "yes")
+            enemy = FencingEnemy(self.__game, 20, "green", "yes",4)
             enemy.x = self.game.home.x - 25
             enemy.y = self.game.home.y - 25
             self.game.add_element(enemy)
