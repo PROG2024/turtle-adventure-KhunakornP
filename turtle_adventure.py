@@ -681,6 +681,7 @@ class EnemyGenerator:
             enemy.y = self.game.home.y - 50
             enemy.orient = 1
             self.game.add_element(enemy)
+            self.game.after(5000, self.call_reinforcements, 5000)
         else:
             random.seed(self.level)
             for i in range(min(60, self.level + 12)):
@@ -703,6 +704,26 @@ class EnemyGenerator:
             enemy.x = self.game.home.x - 25
             enemy.y = self.game.home.y - 25
             self.game.add_element(enemy)
+            self.game.after(5000,self.call_reinforcements, 5000)
+
+    def call_reinforcements(self, time):
+        """Creates enemies after a certain period of time"""
+        for i in range(min(3, self.level//30 +1)):
+            new_enemy = ChasingEnemy(self.__game, 30, "violet red")
+            new_enemy.x = 0
+            new_enemy.y = random.randint(20, self.game.winfo_height()-20)
+            new_enemy.speed = 3 + min(2, self.level//20)
+            self.game.add_element(new_enemy)
+        for i in range(min(10, int(self.level/2 +1))):
+            enemy = RandomWalkEnemy(self.__game, 20, "blue")
+            enemy.x = self.game.winfo_width()
+            enemy.y = random.randint(20, self.game.winfo_height()-20)
+            self.game.add_element(enemy)
+        time -= self.level
+        # enemies should take at least a second to spawn
+        if time <= 100:
+            time = 101
+        self.game.after(time, self.call_reinforcements, time)
 
 
 class TurtleAdventureGame(Game):  # pylint: disable=too-many-ancestors
